@@ -10,7 +10,6 @@
 
 - 接口地址：http://39.108.160.176:8080/book/1
 - 返回示例：
-```json
 {"code":200,"message":"success","data":[{"id":1,"title":"测试书","author":"测试作者","price":39.9,"stock":10}]}
 技术栈
 后端框架：Spring Boot
