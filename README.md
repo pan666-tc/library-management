@@ -60,10 +60,15 @@ src/main/java/com/example/demo/
 ## 接口示例
 
 GET /book/list       查询所有图书
+
 GET /book/{id}       根据 ID 查询图书
+
 POST /book/add       新增图书
+
 PUT /book/update     修改图书
+
 DELETE /book/{id}    删除图书
+
 GET /book/search?title=xxx   按书名模糊搜索
 
 
