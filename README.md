@@ -45,7 +45,7 @@ src/main/java/com/example/demo/
 ## 快速启动
 
 ### 1. 克隆项目
-```bash
+
 git clone https://github.com/pan666-tc/library-management.git
 2. 修改配置文件
 打开 src/main/resources/application.properties，修改数据库和 Redis 连接信息：
