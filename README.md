@@ -4,6 +4,7 @@
 
 **项目已部署至阿里云服务器，可在线访问接口。**
 
+---
 
 ## 技术栈
 
@@ -42,10 +43,14 @@ src/main/java/com/example/demo/
 ├── entity/ # 实体类
 └── common/ # 通用工具类（统一返回结果 Result）
 
+text
+
+---
+
 ## 快速启动
 
 ### 1. 克隆项目
-
+```bash
 git clone https://github.com/pan666-tc/library-management.git
 2. 修改配置文件
 打开 src/main/resources/application.properties，修改数据库和 Redis 连接信息：
@@ -75,7 +80,8 @@ CREATE TABLE book (
 
 5. 在线访问（部署版）
 项目已部署至阿里云服务器，可通过以下地址访问接口：
-http://39.108.160.176:8080/book/1
+
+http://你的服务器IP:你的服务器端口/图书管理项目/swagger-ui/index.html
 核心 API 示例
 功能	请求方式	URL	请求体示例
 查询所有图书	GET	/book/list	无
@@ -87,7 +93,6 @@ http://39.108.160.176:8080/book/1
 接口文档
 启动项目后访问 Swagger UI：
 
-text
 http://localhost:8080/swagger-ui/index.html
 部署信息
 服务器：阿里云
