@@ -2,8 +2,12 @@ package com.example.demo.controller;
 
 import com.example.demo.Result.result;
 import com.example.demo.entity.Book;
+import com.example.demo.exception.BusinessException;
 import com.example.demo.service.BookService;
+import com.example.demo.validation.AddGroup;
+import com.example.demo.validation.UpdateGroup;
 import jakarta.annotation.Resource;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,12 +25,12 @@ public class UserController {
         return result.success(bookList);
     }
     @PostMapping("/add")
-    public result<String> addbook(@RequestBody Book book){
+    public result<String> addbook(@Validated(AddGroup.class) @RequestBody Book book){
         bookService.addbook(book);
         return result.success("add success");
     }
     @PutMapping("/update")
-    public result<String> updatebook(@RequestBody Book book){
+    public result<String> updatebook(@Validated(UpdateGroup.class) @RequestBody Book book){
         bookService.updatebook(book);
         return result.success("update success");
     }
@@ -39,7 +43,7 @@ public class UserController {
     public result<List<Book>> getbook(@PathVariable("id") int id){
         List<Book> listbook=bookService.findbook(id);
         if(listbook.isEmpty()){
-            return result.error("书籍不存在");
+            throw new BusinessException(404, "书籍不存在");
         }
         return result.success(listbook);
     }

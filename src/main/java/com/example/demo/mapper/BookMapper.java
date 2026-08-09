@@ -8,7 +8,7 @@ public interface BookMapper {
     @Select("select * from book")
     List<Book> findall();
 
-    @Insert("insert into book(id,title,author,price,stock) values (#{id},#{title},#{author},#{price},#{stock})")
+    @Insert("insert into book(title,author,price,stock) values (#{title},#{author},#{price},#{stock})")
     void addbook(Book book);
 
     @Update("update book set title=#{title},author=#{author},price=#{price},stock=#{stock} where id=#{id}")
