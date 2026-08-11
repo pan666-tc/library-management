@@ -22,4 +22,12 @@ public interface BookMapper {
 
     @Select("select * from book where title like concat('%',#{title},'%')")
     List<Book> searchbyTitle(String title);
+
+    /** 扣减库存（借书时调用），stock > 0 保证不会扣成负数 */
+    @Update("update book set stock = stock - 1 where id = #{id} and stock > 0")
+    int decreaseStock(Integer id);
+
+    /** 增加库存（还书时调用） */
+    @Update("update book set stock = stock + 1 where id = #{id}")
+    int increaseStock(Integer id);
 }
