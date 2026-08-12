@@ -6,6 +6,7 @@ import com.example.demo.exception.BusinessException;
 import com.example.demo.service.BookService;
 import com.example.demo.validation.AddGroup;
 import com.example.demo.validation.UpdateGroup;
+import com.github.pagehelper.PageInfo;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +21,11 @@ public class UserController {
     private BookService bookService;
 
     @GetMapping("/list")
-    public result<List<Book>> getbookall(){
-        List<Book> bookList=bookService.findall();
-        return result.success(bookList);
+    public result<PageInfo<Book>> getbookall(
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize){
+        PageInfo<Book> pageInfo = bookService.findall(pageNum, pageSize);
+        return result.success(pageInfo);
     }
     @PostMapping("/add")
     public result<String> addbook(@Validated(AddGroup.class) @RequestBody Book book){

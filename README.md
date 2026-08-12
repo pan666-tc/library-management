@@ -19,13 +19,14 @@
 - **缓存中间件**: Redis
 - **构建工具**: Maven
 - **参数校验**: Spring Validation (JSR 303)
+- **分页插件**: PageHelper
 - **API 测试**: Postman
 - **版本控制**: Git
 - **部署环境**: 阿里云服务器（Ubuntu）
 
 ## 主要功能
 
-- 查询所有图书
+- 查询所有图书（支持分页）
 - 根据 ID 查询单本图书（Redis 缓存支持）
 - 新增图书（自动校验参数）
 - 修改图书信息（自动校验参数）
@@ -34,11 +35,20 @@
 - 读者管理（新增读者、查询读者）
 - 借书（多表事务：扣库存 + 插借阅记录）
 - 还书（多表事务：更状态 + 加库存）
+- 借阅历史查询（支持分页）
 
 ## 性能优化
 
 - 引入 Redis 缓存后，接口响应时间从 1.15s 降至 24ms
 - 使用 @Cacheable 缓存查询结果，@CacheEvict 保证缓存与数据库一致性
+
+## v1.4 更新内容
+
+1. **分页查询**：集成 PageHelper 分页插件，实现图书列表和借阅历史的分页查询
+2. **PageHelper 拦截器机制**：基于 MyBatis 拦截器自动改写 SQL（追加 LIMIT），并额外执行 COUNT 查询统计总数
+3. **PageInfo 分页封装**：返回 `PageInfo` 对象，包含 total、pages、hasNextPage 等前端分页组件所需的全部信息
+4. **驼峰映射**：开启 `map-underscore-to-camel-case=true`，自动将数据库下划线命名（`user_id`）映射为 Java 驼峰命名（`userId`）
+5. **借阅历史接口**：新增 `GET /borrow/history?userId=xx&pageNum=1&pageSize=10`，按借书时间倒序分页展示读者借阅记录
 
 ## v1.3 更新内容
 
@@ -92,7 +102,7 @@ src/main/java/com/example/demo/
 
 | 功能 | 请求方式 | URL | 请求体示例 |
 |---|---|---|---|
-| 查询所有图书 | GET | `/book/list` | 无 |
+| 查询图书列表（分页） | GET | `/book/list?pageNum=1&pageSize=10` | 无 |
 | 根据ID查询 | GET | `/book/{id}` | 无 |
 | 新增图书 | POST | `/book/add` | `{"title":"Spring Boot实战", "author":"Craig Walls", "price":79.9, "stock":10}` |
 | 修改图书 | PUT | `/book/update` | `{"id":1, "title":"Java编程思想", "price":99.9}` |
@@ -100,6 +110,7 @@ src/main/java/com/example/demo/
 | 模糊搜索 | GET | `/book/search?title=Java` | 无 |
 | 借书 | POST | `/borrow/borrow?userId=1&bookId=1` | 无 |
 | 还书 | POST | `/borrow/return?userId=1&bookId=1` | 无 |
+| 借阅历史（分页） | GET | `/borrow/history?userId=1&pageNum=1&pageSize=10` | 无 |
 
 ## 部署信息
 
@@ -114,6 +125,7 @@ src/main/java/com/example/demo/
 - **v1.1** - 修复 SQL 语法错误、类型不匹配等问题，集成 Redis 缓存
 - **v1.2** - 新增全局异常处理、参数校验、校验分组
 - **v1.3** - 新增多表关联（读者/借阅记录）、事务管理、借书还书业务
+- **v1.4** - 新增 PageHelper 分页查询、驼峰映射配置
 
 ## License
 

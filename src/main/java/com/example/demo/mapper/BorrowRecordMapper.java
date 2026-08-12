@@ -3,6 +3,8 @@ package com.example.demo.mapper;
 import com.example.demo.entity.BorrowRecord;
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
+
 public interface BorrowRecordMapper {
 
     @Insert("insert into borrow_record(user_id, book_id, status) values(#{userId}, #{bookId}, 0)")
@@ -17,4 +19,7 @@ public interface BorrowRecordMapper {
 
     @Select("select * from borrow_record where id = #{id}")
     BorrowRecord findById(Integer id);
+
+    @Select("select * from borrow_record where user_id = #{userId} order by borrow_date desc")
+    List<BorrowRecord> findByUserId(Integer userId);
 }

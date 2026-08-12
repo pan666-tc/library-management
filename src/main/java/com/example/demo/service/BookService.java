@@ -3,6 +3,8 @@ package com.example.demo.service;
 
 import com.example.demo.entity.Book;
 import com.example.demo.mapper.BookMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import jakarta.annotation.Resource;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -15,8 +17,10 @@ public class BookService {
     @Resource
     private BookMapper bookmapper;
 
-    public List<Book> findall(){
-        return bookmapper.findall();
+    public PageInfo<Book> findall(int pageNum, int pageSize){
+        PageHelper.startPage(pageNum, pageSize);
+        List<Book> bookList = bookmapper.findall();
+        return new PageInfo<>(bookList);
     }
 
     @Cacheable(value="books",key="#id")

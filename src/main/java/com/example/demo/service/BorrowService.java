@@ -5,6 +5,8 @@ import com.example.demo.entity.BorrowRecord;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.mapper.BookMapper;
 import com.example.demo.mapper.BorrowRecordMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,5 +69,14 @@ public class BorrowService {
         bookMapper.increaseStock(bookId);
 
         // 如果这一步抛异常，前面的更新记录会自动回滚 ← 事务保证数据一致
+    }
+
+    /**
+     * 分页查询某读者的借阅历史
+     */
+    public PageInfo<BorrowRecord> getBorrowHistory(Integer userId, int pageNum, int pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<BorrowRecord> list = borrowRecordMapper.findByUserId(userId);
+        return new PageInfo<>(list);
     }
 }
