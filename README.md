@@ -47,6 +47,13 @@
 - 使用 @Cacheable 缓存查询结果，@CacheEvict 保证缓存与数据库一致性
 - 采用 Cache-Aside Pattern（旁路缓存模式），更新时先更数据库再删缓存
 
+## v1.7 更新内容
+
+1. **API 接口文档**：集成 SpringDoc OpenAPI，自动生成在线 API 文档（访问 `/swagger-ui/index.html`）
+2. **Swagger 注解**：Controller 添加 `@Tag`（分组）、`@Operation`（接口描述）、`@Parameter`（参数说明）注解
+3. **文档路径放行**：SecurityConfig 配置 `WebSecurityCustomizer` 放行 Swagger 相关路径，无需登录即可访问文档
+4. **Redis 缓存配置合并**：将 CacheConfig 的 TTL 配置合并到 RedisConfig，避免 bean 冲突
+
 ## v1.6 更新内容
 
 1. **Redis 缓存完善**：为图书列表分页查询、单本查询、模糊搜索全部添加 `@Cacheable` 缓存
@@ -156,6 +163,7 @@ src/main/java/com/example/demo/
 - **v1.4** - 新增 PageHelper 分页查询、驼峰映射配置
 - **v1.5** - 新增 Spring Security + JWT 认证、用户注册登录、接口权限控制
 - **v1.6** - 完善 Redis 缓存：全查询缓存、写操作清缓存、Cache-Aside Pattern、TTL 过期配置
+- **v1.7** - 集成 SpringDoc OpenAPI 自动生成 API 文档，添加 Swagger 注解
 
 ## License
 

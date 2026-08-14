@@ -25,19 +25,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.contains("swagger-ui")
+                || uri.contains("v3/api-docs")
+                || uri.contains("webjars")
+                || uri.contains("favicon.ico");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        // 1. 从请求头获取 token
         String token = getTokenFromRequest(request);
 
-        // 2. token 存在且有效 → 解析用户信息，存入 SecurityContext
         if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
             Claims claims = jwtUtil.parseToken(token);
             Integer userId = Integer.parseInt(claims.getSubject());
-            String username = claims.get("username", String.class);
 
-            // 创建认证对象，principal 存 userId，方便后续从 Controller 获取
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userId,
                     null,
@@ -46,14 +51,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
-        // 3. 继续过滤器链（无论是否认证成功，都放行给 Spring Security 判断）
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * 从 Authorization 请求头中提取 token
-     * 格式：Authorization: Bearer xxxxx.yyyyy.zzzzz
-     */
     private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
