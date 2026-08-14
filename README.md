@@ -45,6 +45,14 @@
 
 - 引入 Redis 缓存后，接口响应时间从 1.15s 降至 24ms
 - 使用 @Cacheable 缓存查询结果，@CacheEvict 保证缓存与数据库一致性
+- 采用 Cache-Aside Pattern（旁路缓存模式），更新时先更数据库再删缓存
+
+## v1.6 更新内容
+
+1. **Redis 缓存完善**：为图书列表分页查询、单本查询、模糊搜索全部添加 `@Cacheable` 缓存
+2. **缓存一致性**：新增/修改/删除图书时用 `@CacheEvict(allEntries=true)` 清除所有相关缓存，保证数据一致
+3. **缓存配置**：新增 `CacheConfig`，设置缓存默认过期时间 30 分钟（TTL）
+4. **Cache-Aside Pattern**：查询先查缓存再查数据库，写操作先更数据库再删缓存
 
 ## v1.5 更新内容
 
@@ -147,6 +155,7 @@ src/main/java/com/example/demo/
 - **v1.3** - 新增多表关联（读者/借阅记录）、事务管理、借书还书业务
 - **v1.4** - 新增 PageHelper 分页查询、驼峰映射配置
 - **v1.5** - 新增 Spring Security + JWT 认证、用户注册登录、接口权限控制
+- **v1.6** - 完善 Redis 缓存：全查询缓存、写操作清缓存、Cache-Aside Pattern、TTL 过期配置
 
 ## License
 
