@@ -1,6 +1,6 @@
 # 图书管理系统（Library Management System）
 
-基于 Spring Boot + MyBatis + MySQL + Redis 的图书管理后端系统，提供完整的图书信息增删改查 API，支持读者借书/还书多表事务操作、按书名模糊搜索、集成 Redis 缓存优化查询性能，具备全局异常处理与参数校验能力。
+基于 Spring Boot + MyBatis + MySQL + Redis 的图书管理后端系统，提供完整的图书信息增删改查 API，支持读者借书/还书多表事务操作、按书名模糊搜索、集成 Redis 缓存优化查询性能，具备全局异常处理与参数校验能力，基于 Spring Security + JWT 实现用户认证与接口权限控制。
 
 **项目已部署至阿里云服务器，可在线访问接口。**
 
@@ -20,6 +20,7 @@
 - **构建工具**: Maven
 - **参数校验**: Spring Validation (JSR 303)
 - **分页插件**: PageHelper
+- **安全认证**: Spring Security + JWT
 - **API 测试**: Postman
 - **版本控制**: Git
 - **部署环境**: 阿里云服务器（Ubuntu）
@@ -36,11 +37,22 @@
 - 借书（多表事务：扣库存 + 插借阅记录）
 - 还书（多表事务：更状态 + 加库存）
 - 借阅历史查询（支持分页）
+- 用户注册（BCrypt 密码加密）
+- 用户登录（JWT token 认证）
+- 接口权限控制（未登录返回 401）
 
 ## 性能优化
 
 - 引入 Redis 缓存后，接口响应时间从 1.15s 降至 24ms
 - 使用 @Cacheable 缓存查询结果，@CacheEvict 保证缓存与数据库一致性
+
+## v1.5 更新内容
+
+1. **Spring Security + JWT 认证**：集成 Spring Security，实现基于 JWT 的无状态身份认证，前后端分离架构
+2. **用户注册与登录**：新增 `AuthController` 提供注册/登录接口，密码使用 BCrypt 加盐加密存储
+3. **JWT 过滤器**：自定义 `JwtAuthenticationFilter`，拦截请求从 Header 提取 token，验证后存入 SecurityContext
+4. **接口权限控制**：`SecurityConfig` 配置登录/注册接口放行（permitAll），其他接口需认证（authenticated），未认证返回 401 JSON
+5. **身份自动获取**：借书/还书/借阅历史接口不再需要前端传 userId，从 SecurityContext 自动提取当前登录用户
 
 ## v1.4 更新内容
 
@@ -71,9 +83,11 @@
 ```
 src/main/java/com/example/demo/
 ├── controller/     # 控制器层，处理HTTP请求
+│   ├── AuthController.java     # 注册/登录接口
 │   ├── BorrowController.java   # 借书/还书接口
 │   └── UserController.java     # 图书CRUD接口
 ├── service/        # 业务逻辑层
+│   ├── AuthService.java        # 注册/登录业务
 │   ├── BorrowService.java      # 借书/还书事务业务
 │   └── BookService.java        # 图书业务
 ├── mapper/         # 数据访问层，MyBatis Mapper接口
@@ -84,6 +98,10 @@ src/main/java/com/example/demo/
 │   ├── BorrowRecord.java       # 借阅记录实体
 │   ├── Book.java               # 图书实体
 │   └── User.java               # 读者实体
+├── security/       # 安全认证
+│   ├── JwtUtil.java            # JWT token 工具类
+│   ├── JwtAuthenticationFilter.java # JWT 过滤器
+│   └── SecurityConfig.java     # Spring Security 配置
 ├── exception/      # 全局异常处理器 + 自定义业务异常
 ├── validation/     # 校验分组（AddGroup / UpdateGroup）
 ├── Result/         # 统一返回结果
@@ -108,9 +126,11 @@ src/main/java/com/example/demo/
 | 修改图书 | PUT | `/book/update` | `{"id":1, "title":"Java编程思想", "price":99.9}` |
 | 删除图书 | DELETE | `/book/{id}` | 无 |
 | 模糊搜索 | GET | `/book/search?title=Java` | 无 |
-| 借书 | POST | `/borrow/borrow?userId=1&bookId=1` | 无 |
-| 还书 | POST | `/borrow/return?userId=1&bookId=1` | 无 |
-| 借阅历史（分页） | GET | `/borrow/history?userId=1&pageNum=1&pageSize=10` | 无 |
+| 借书 | POST | `/borrow/borrow?bookId=1` | 需登录（Header带token） |
+| 还书 | POST | `/borrow/return?bookId=1` | 需登录（Header带token） |
+| 借阅历史（分页） | GET | `/borrow/history?pageNum=1&pageSize=10` | 需登录（Header带token） |
+| 用户注册 | POST | `/auth/register?username=xxx&password=xxx&phone=xxx` | 无 |
+| 用户登录 | POST | `/auth/login?username=xxx&password=xxx` | 无 |
 
 ## 部署信息
 
@@ -126,6 +146,7 @@ src/main/java/com/example/demo/
 - **v1.2** - 新增全局异常处理、参数校验、校验分组
 - **v1.3** - 新增多表关联（读者/借阅记录）、事务管理、借书还书业务
 - **v1.4** - 新增 PageHelper 分页查询、驼峰映射配置
+- **v1.5** - 新增 Spring Security + JWT 认证、用户注册登录、接口权限控制
 
 ## License
 
