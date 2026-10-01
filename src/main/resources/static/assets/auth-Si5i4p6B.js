@@ -1,0 +1,1 @@
+import{r as s}from"./request-1VSNZ2Md.js";const o=(r,t,a)=>s.post("/auth/register",null,{params:{username:r,password:t,phone:a}}),n=(r,t)=>s.post("/auth/login",null,{params:{username:r,password:t}});export{n as l,o as r};

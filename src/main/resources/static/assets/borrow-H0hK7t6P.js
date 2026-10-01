@@ -1,0 +1,1 @@
+import{r as o}from"./request-1VSNZ2Md.js";const a=r=>o.post("/borrow/borrow",null,{params:{bookId:r}}),e=r=>o.post("/borrow/return",null,{params:{bookId:r}}),n=(r=1,t=10)=>o.get("/borrow/history",{params:{pageNum:r,pageSize:t}});export{a as b,n as g,e as r};

@@ -1,0 +1,1 @@
+import{r as o}from"./request-1VSNZ2Md.js";const e=(r=1,s=10)=>o.get("/book/list",{params:{pageNum:r,pageSize:s}}),a=r=>o.get("/book/"+r),n=r=>o.get("/book/search",{params:{title:r}});export{a,e as f,n as s};

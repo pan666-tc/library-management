@@ -2,7 +2,9 @@
 
 基于 **Spring Boot + Vue3** 的前后端分离图书管理系统，后端使用 Spring Boot + MyBatis + MySQL + Redis + Spring Security + JWT，前端使用 Vue3 + Vite + Element Plus + Axios + Vue Router。提供完整的图书增删改查、借书还书事务操作、用户认证鉴权、Redis 缓存加速等功能。
 
-**在线演示**：http://39.108.160.176:8080/swagger-ui/index.html
+**在线演示**：
+- 🌐 前端页面：http://39.108.160.176:8080/ （注册账号即可登录）
+- 📖 API 文档：http://39.108.160.176:8080/swagger-ui/index.html
 
 ## 技术栈
 
