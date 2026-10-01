@@ -1,169 +1,160 @@
 # 图书管理系统（Library Management System）
 
-基于 Spring Boot + MyBatis + MySQL + Redis 的图书管理后端系统，提供完整的图书信息增删改查 API，支持读者借书/还书多表事务操作、按书名模糊搜索、集成 Redis 缓存优化查询性能，具备全局异常处理与参数校验能力，基于 Spring Security + JWT 实现用户认证与接口权限控制。
+基于 **Spring Boot + Vue3** 的前后端分离图书管理系统，后端使用 Spring Boot + MyBatis + MySQL + Redis + Spring Security + JWT，前端使用 Vue3 + Vite + Element Plus + Axios + Vue Router。提供完整的图书增删改查、借书还书事务操作、用户认证鉴权、Redis 缓存加速等功能。
 
-**项目已部署至阿里云服务器，可在线访问接口。**
-
-**在线演示地址**：http://39.108.160.176:8080/book/1
-
-**返回示例**：
-```json
-{"code":200,"message":"success","data":[{"id":1,"title":"测试书","author":"测试作者","price":39.9,"stock":10}]}
-```
+**在线演示**：http://39.108.160.176:8080/swagger-ui/index.html
 
 ## 技术栈
 
-- **后端框架**: Spring Boot 3.x / Java 17
-- **持久层框架**: MyBatis
-- **数据库**: MySQL 5.7
-- **缓存中间件**: Redis
-- **构建工具**: Maven
-- **参数校验**: Spring Validation (JSR 303)
-- **分页插件**: PageHelper
-- **安全认证**: Spring Security + JWT
-- **API 测试**: Postman
-- **版本控制**: Git
-- **部署环境**: 阿里云服务器（Ubuntu）
+### 后端
+- Spring Boot 3.x / Java 17
+- MyBatis
+- MySQL 5.7 / Redis
+- Spring Security + JWT
+- PageHelper（分页）
+- SpringDoc OpenAPI（API 文档）
 
-## 主要功能
-
-- 查询所有图书（支持分页）
-- 根据 ID 查询单本图书（Redis 缓存支持）
-- 新增图书（自动校验参数）
-- 修改图书信息（自动校验参数）
-- 删除图书
-- 按书名模糊搜索
-- 读者管理（新增读者、查询读者）
-- 借书（多表事务：扣库存 + 插借阅记录）
-- 还书（多表事务：更状态 + 加库存）
-- 借阅历史查询（支持分页）
-- 用户注册（BCrypt 密码加密）
-- 用户登录（JWT token 认证）
-- 接口权限控制（未登录返回 401）
-
-## 性能优化
-
-- 引入 Redis 缓存后，接口响应时间从 1.15s 降至 24ms
-- 使用 @Cacheable 缓存查询结果，@CacheEvict 保证缓存与数据库一致性
-- 采用 Cache-Aside Pattern（旁路缓存模式），更新时先更数据库再删缓存
-
-## v1.7 更新内容
-
-1. **API 接口文档**：集成 SpringDoc OpenAPI，自动生成在线 API 文档（访问 `/swagger-ui/index.html`）
-2. **Swagger 注解**：Controller 添加 `@Tag`（分组）、`@Operation`（接口描述）、`@Parameter`（参数说明）注解
-3. **文档路径放行**：SecurityConfig 配置 `WebSecurityCustomizer` 放行 Swagger 相关路径，无需登录即可访问文档
-4. **Redis 缓存配置合并**：将 CacheConfig 的 TTL 配置合并到 RedisConfig，避免 bean 冲突
-
-## v1.6 更新内容
-
-1. **Redis 缓存完善**：为图书列表分页查询、单本查询、模糊搜索全部添加 `@Cacheable` 缓存
-2. **缓存一致性**：新增/修改/删除图书时用 `@CacheEvict(allEntries=true)` 清除所有相关缓存，保证数据一致
-3. **缓存配置**：新增 `CacheConfig`，设置缓存默认过期时间 30 分钟（TTL）
-4. **Cache-Aside Pattern**：查询先查缓存再查数据库，写操作先更数据库再删缓存
-
-## v1.5 更新内容
-
-1. **Spring Security + JWT 认证**：集成 Spring Security，实现基于 JWT 的无状态身份认证，前后端分离架构
-2. **用户注册与登录**：新增 `AuthController` 提供注册/登录接口，密码使用 BCrypt 加盐加密存储
-3. **JWT 过滤器**：自定义 `JwtAuthenticationFilter`，拦截请求从 Header 提取 token，验证后存入 SecurityContext
-4. **接口权限控制**：`SecurityConfig` 配置登录/注册接口放行（permitAll），其他接口需认证（authenticated），未认证返回 401 JSON
-5. **身份自动获取**：借书/还书/借阅历史接口不再需要前端传 userId，从 SecurityContext 自动提取当前登录用户
-
-## v1.4 更新内容
-
-1. **分页查询**：集成 PageHelper 分页插件，实现图书列表和借阅历史的分页查询
-2. **PageHelper 拦截器机制**：基于 MyBatis 拦截器自动改写 SQL（追加 LIMIT），并额外执行 COUNT 查询统计总数
-3. **PageInfo 分页封装**：返回 `PageInfo` 对象，包含 total、pages、hasNextPage 等前端分页组件所需的全部信息
-4. **驼峰映射**：开启 `map-underscore-to-camel-case=true`，自动将数据库下划线命名（`user_id`）映射为 Java 驼峰命名（`userId`）
-5. **借阅历史接口**：新增 `GET /borrow/history?userId=xx&pageNum=1&pageSize=10`，按借书时间倒序分页展示读者借阅记录
-
-## v1.3 更新内容
-
-1. **多表关联设计**：新增 `user`（读者）和 `borrow_record`（借阅记录）两张表，通过中间表实现读者-图书多对多关系
-2. **事务管理**：基于 `@Transactional` 实现借书/还书多表操作的事务一致性，避免数据不一致（扣库存成功但记录未插入）
-3. **SQL 原子扣库存**：使用 `update book set stock = stock - 1 where id = #{id} and stock > 0` 实现并发安全的库存扣减，防止超卖
-4. **借阅状态管理**：借阅记录 status 字段（0=借阅中，1=已归还），支持查询未归还记录，防止重复还书
-5. **借阅业务接口**：新增 `BorrowController` 提供借书、还书 API
-
-## v1.2 更新内容
-
-1. **全局异常处理**：基于 `@RestControllerAdvice` + `@ExceptionHandler` 实现统一异常捕获，避免将错误堆栈直接暴露给前端
-2. **自定义业务异常**：新增 `BusinessException`，支持在业务逻辑中主动抛出携带错误码的异常
-3. **参数校验**：基于 JSR 303 注解（`@NotBlank`、`@NotNull`、`@Min`、`@DecimalMin`）实现字段级校验
-4. **校验分组**：通过 `AddGroup` / `UpdateGroup` 区分新增和更新场景的校验规则（新增不校验 id，更新必须传 id）
-5. **数据库自增主键**：insert 语句不再插入 id，由数据库 AUTO_INCREMENT 生成
+### 前端
+- Vue 3 + Vite 5.x
+- Element Plus（UI 组件库）
+- Axios（HTTP 客户端）
+- Vue Router 4（路由 + 路由守卫）
 
 ## 项目结构
 
 ```
-src/main/java/com/example/demo/
-├── controller/     # 控制器层，处理HTTP请求
-│   ├── AuthController.java     # 注册/登录接口
-│   ├── BorrowController.java   # 借书/还书接口
-│   └── UserController.java     # 图书CRUD接口
-├── service/        # 业务逻辑层
-│   ├── AuthService.java        # 注册/登录业务
-│   ├── BorrowService.java      # 借书/还书事务业务
-│   └── BookService.java        # 图书业务
-├── mapper/         # 数据访问层，MyBatis Mapper接口
-│   ├── BorrowRecordMapper.java # 借阅记录CRUD
-│   ├── BookMapper.java         # 图书CRUD
-│   └── UserMapper.java         # 读者CRUD
-├── entity/         # 实体类（含校验注解）
-│   ├── BorrowRecord.java       # 借阅记录实体
-│   ├── Book.java               # 图书实体
-│   └── User.java               # 读者实体
-├── security/       # 安全认证
-│   ├── JwtUtil.java            # JWT token 工具类
-│   ├── JwtAuthenticationFilter.java # JWT 过滤器
-│   └── SecurityConfig.java     # Spring Security 配置
-├── exception/      # 全局异常处理器 + 自定义业务异常
-├── validation/     # 校验分组（AddGroup / UpdateGroup）
-├── Result/         # 统一返回结果
-└── DemoApplication.java
+图书管理项目/
+├── src/                    # Spring Boot 后端
+│   └── main/java/com/example/demo/
+│       ├── controller/         # 控制层
+│       │   ├── AuthController.java     # 注册/登录
+│       │   ├── BorrowController.java   # 借书/还书/历史
+│       │   └── UserController.java     # 图书 CRUD
+│       ├── service/            # 业务层（含 @Transactional）
+│       ├── mapper/             # MyBatis Mapper
+│       ├── entity/             # 实体类
+│       ├── security/           # Spring Security + JWT
+│       ├── exception/          # 全局异常处理
+│       ├── config/             # Redis + Security 配置
+│       └── DemoApplication.java
+├── frontend/               # Vue3 前端
+│   ├── src/
+│   │   ├── api/            # 后端接口封装
+│   │   │   ├── request.js       # Axios 实例（拦截器 + token）
+│   │   │   ├── auth.js          # 登录/注册
+│   │   │   ├── book.js          # 图书列表/详情/搜索
+│   │   │   └── borrow.js        # 借书/还书/历史
+│   │   ├── router/         # Vue Router + 路由守卫
+│   │   ├── views/          # 页面组件
+│   │   │   ├── Login.vue        # 登录
+│   │   │   ├── Register.vue      # 注册
+│   │   │   ├── Layout.vue       # 带导航的主布局
+│   │   │   ├── BookList.vue     # 图书列表（分页）
+│   │   │   ├── BookDetail.vue   # 图书详情
+│   │   │   ├── BookSearch.vue   # 按书名搜索
+│   │   │   └── BorrowHistory.vue # 借阅历史
+│   │   ├── App.vue
+│   │   └── main.js
+│   ├── vite.config.js      # 含 proxy 代理 /api → 后端8080
+│   └── package.json
+└── pom.xml
 ```
 
-## 如何运行
+## 前后端分离架构
 
-1. 克隆项目到本地
-2. 配置 MySQL 和 Redis 服务
-3. 修改 `application.properties` 中的数据库连接信息
-4. 运行 `DemoApplication.java` 中的 `main` 方法
-5. 使用 Postman 测试 API
+```
+浏览器 (localhost:5173)
+    │
+    │  HTTP 请求（Axios 自动带 JWT）
+    ↓
+Vite Dev Server
+    │  /api/* 代理转发
+    ↓
+Spring Boot (localhost:8080)
+    │
+    ├── JwtAuthenticationFilter  ← 解析 token、鉴权
+    ├── Controller                ← 接收请求
+    ├── Service + @Transactional  ← 业务逻辑 + 事务
+    ├── @Cacheable/@CacheEvict    ← Redis 缓存
+    └── MyBatis + MySQL           ← 持久化
+```
 
-## 核心 API 示例
+**Vite Proxy 配置**（开发环境解决跨域）：
+```js
+proxy: {
+  '/api': {
+    target: 'http://localhost:8080',
+    changeOrigin: true,
+    rewrite: (path) => path.replace(/^\/api/, '')
+  }
+}
+```
 
-| 功能 | 请求方式 | URL | 请求体示例 |
-|---|---|---|---|
-| 查询图书列表（分页） | GET | `/book/list?pageNum=1&pageSize=10` | 无 |
-| 根据ID查询 | GET | `/book/{id}` | 无 |
-| 新增图书 | POST | `/book/add` | `{"title":"Spring Boot实战", "author":"Craig Walls", "price":79.9, "stock":10}` |
-| 修改图书 | PUT | `/book/update` | `{"id":1, "title":"Java编程思想", "price":99.9}` |
-| 删除图书 | DELETE | `/book/{id}` | 无 |
-| 模糊搜索 | GET | `/book/search?title=Java` | 无 |
-| 借书 | POST | `/borrow/borrow?bookId=1` | 需登录（Header带token） |
-| 还书 | POST | `/borrow/return?bookId=1` | 需登录（Header带token） |
-| 借阅历史（分页） | GET | `/borrow/history?pageNum=1&pageSize=10` | 需登录（Header带token） |
-| 用户注册 | POST | `/auth/register?username=xxx&password=xxx&phone=xxx` | 无 |
-| 用户登录 | POST | `/auth/login?username=xxx&password=xxx` | 无 |
+## 主要功能
 
-## 部署信息
+- ✅ 用户注册（BCrypt 加盐加密）
+- ✅ 用户登录（JWT token 认证，24h 有效）
+- ✅ 路由守卫（未登录自动跳登录页）
+- ✅ 图书列表（分页 + Redis 缓存）
+- ✅ 图书详情（支持借书/还书）
+- ✅ 图书搜索（按书名模糊匹配）
+- ✅ 借书/还书（@Transactional 保证事务原子性）
+- ✅ 并发安全（SQL 原子扣库存 `WHERE stock > 0` 防超卖）
+- ✅ 借阅历史（分页展示）
+- ✅ 全局异常处理（@RestControllerAdvice）
+- ✅ 参数校验（JSR 303 注解）
+- ✅ API 文档（SpringDoc OpenAPI）
 
-- 服务器：阿里云轻量应用服务器
-- 操作系统：Ubuntu 22.04
-- 部署方式：JAR 包独立运行
-- 访问端口：8080
+## 快速开始
+
+### 后端启动
+
+```bash
+# 1. 确保 MySQL 和 Redis 已运行
+# 2. 修改 application.properties 中的数据库/Redis 连接信息
+# 3. 运行 DemoApplication.java 的 main 方法
+# 4. 后端启动在 http://localhost:8080
+```
+
+### 前端启动
+
+```bash
+cd frontend
+npm install
+npm run dev
+# 前端启动在 http://localhost:5173
+```
+
+### 开发环境前提
+
+- **Node.js** v20+ （zip 解压版，已安装在 D:\nodejs）
+- **Java** 17+
+- **MySQL** 5.7+
+- **Redis**
+
+## 核心技术点（面试可讲）
+
+| 技术点 | 对应模块 | 关键实现 |
+|--------|---------|---------|
+| Spring Security + JWT | 用户认证 | BCrypt 加密、JwtAuthenticationFilter 过滤器、SecurityContext |
+| @Transactional | 借书还书事务 | 扣库存 + 插记录原子性、READ_COMMITTED 隔离级别 |
+| SQL 原子操作 | 并发控制 | `UPDATE book SET stock = stock-1 WHERE id=? AND stock>0` |
+| Cache-Aside Pattern | Redis 缓存 | @Cacheable 查缓存、@CacheEvict 写操作清缓存、TTL 30min |
+| PageHelper | 分页查询 | MyBatis 拦截器改写 SQL LIMIT、PageInfo 封装 |
+| Vite Proxy | 跨域解决 | 开发环境 /api → localhost:8080 |
+| Axios 拦截器 | Token 管理 | 请求拦截加 Bearer token、响应拦截处理 401 跳登录 |
+| Vue Router 守卫 | 前端权限 | 未登录用户自动跳 /login |
 
 ## 版本历史
 
-- **v1.0** - 基础 CRUD 功能
-- **v1.1** - 修复 SQL 语法错误、类型不匹配等问题，集成 Redis 缓存
-- **v1.2** - 新增全局异常处理、参数校验、校验分组
-- **v1.3** - 新增多表关联（读者/借阅记录）、事务管理、借书还书业务
-- **v1.4** - 新增 PageHelper 分页查询、驼峰映射配置
-- **v1.5** - 新增 Spring Security + JWT 认证、用户注册登录、接口权限控制
-- **v1.6** - 完善 Redis 缓存：全查询缓存、写操作清缓存、Cache-Aside Pattern、TTL 过期配置
-- **v1.7** - 集成 SpringDoc OpenAPI 自动生成 API 文档，添加 Swagger 注解
+- **v1.0** - 基础 CRUD
+- **v1.2** - 全局异常处理 + 参数校验
+- **v1.3** - 多表关联 + 事务管理 + 借书还书
+- **v1.4** - PageHelper 分页
+- **v1.5** - Spring Security + JWT 认证
+- **v1.6** - Redis 缓存完善
+- **v1.7** - SpringDoc API 文档
+- **v2.0** - 🎉 **前后端分离架构**：新增 Vue3 + Vite + Element Plus 前端，完整 UI 界面
 
 ## License
 
